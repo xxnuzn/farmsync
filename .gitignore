@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+
+# 서버 데이터 (메시지 DB 는 커밋하지 않는다)
+data/
+*.db
+*.db-wal
+*.db-shm
+
+# 환경 변수
+.env
+
+# 편집기 / OS
+.vscode/
+.idea/
+.DS_Store

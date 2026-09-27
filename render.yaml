@@ -1,0 +1,15 @@
+# Render.com 배포 설정 (무료 플랜으로 시연 가능)
+# 저장소 루트에 이 파일을 두고 Render 에서 Blueprint 로 연결하면 그대로 배포된다.
+services:
+  - type: web
+    name: farmsync
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn server.app:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /healthz
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.6
+      - key: FARMSYNC_DB
+        value: /opt/render/project/src/data/farmsync.db

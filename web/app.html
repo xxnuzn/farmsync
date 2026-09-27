@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FarmSync — 오프라인에서도 이어지는 납품 채팅</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/app.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand"><i></i>팜싱크 <em>FARMSYNC</em></div>
+  <span class="room" id="roomLabel">방 default</span>
+  <span class="state" id="stateBadge" data-state="offline"><span class="dot"></span><span id="stateText">오프라인</span></span>
+  <a class="back" href="/">← 소개 페이지</a>
+</header>
+
+<div class="wrap">
+  <!-- ------------------------------------------------ 채팅 -->
+  <section class="chatcol">
+    <div class="chat-head">
+      <h1>납품 협의 채팅</h1>
+      <p>회선이 끊겨도 보낸 메시지는 기기에 남고, 다시 연결되면 서버와 순서대로 맞춰집니다.</p>
+    </div>
+
+    <div class="msgs" id="msgs"></div>
+
+    <div class="composer">
+      <div class="row">
+        <input type="text" id="input" placeholder="메시지를 입력하고 Enter" autocomplete="off">
+        <button class="primary" id="btnSend">전송</button>
+      </div>
+      <div class="tools">
+        <button class="danger" id="btnCut">회선 끊기</button>
+        <button id="btnRetry">큐 재전송</button>
+        <button id="btnHistory">서버 이력 불러오기</button>
+        <button id="btnReset">로컬 상태 초기화</button>
+        <select id="whoami" title="접속자 선택">
+          <option value="농장주">농장주</option>
+          <option value="기업">기업 담당자</option>
+          <option value="물류">물류 담당</option>
+        </select>
+        <span class="hint" id="hint">끊긴 뒤에도 입력해 보세요</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ------------------------------------------------ 사이드 -->
+  <aside class="side">
+
+    <div class="card">
+      <h2>실증 지표 <span class="tag">유실 0 · 중복 0 · 순서 오류 0</span></h2>
+      <div class="metrics">
+        <div><b class="zero" id="mDup">0</b><span>중복 차단</span></div>
+        <div><b class="count" id="mPending">0</b><span>전송 대기</span></div>
+        <div><b class="count" id="mSent">0</b><span>서버 저장</span></div>
+        <div><b class="count" id="mRecv">0</b><span>수신</span></div>
+        <div><b class="count" id="mResync">0</b><span>재동기화 횟수</span></div>
+        <div><b class="count" id="mResyncMsg">0</b><span>복구 메시지</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>세션 · 수신 오프셋 <span class="tag">L5</span></h2>
+      <div class="body">
+        <div class="kv">
+          <div><span class="k">내 세션 ID</span><span class="v" id="kSession">—</span></div>
+          <div><span class="k">접속자</span><span class="v" id="kUser">—</span></div>
+          <div><span class="k">수신 오프셋</span><span class="v" id="kOffset">seq 0</span></div>
+          <div><span class="k">서버 최신</span><span class="v" id="kLatest">seq 0</span></div>
+          <div><span class="k">접속 상태</span><span class="v off" id="kState">오프라인</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>로컬 큐 (Outbox) <span class="tag" id="queueCount">0건</span></h2>
+      <div class="queue" id="queue"><div class="empty">전송 대기 중인 메시지가 없습니다.</div></div>
+      <div class="hintbox">회선이 끊긴 동안 작성한 메시지는 여기에 순서대로 쌓입니다. 다시 연결되면 <b>밀린 대화를 먼저 병합한 뒤</b> 큐를 내보내 순서가 뒤섞이지 않습니다.</div>
+    </div>
+
+    <div class="card">
+      <h2>계층 로그 <span class="tag">L4 · L5 · L6 · L7</span></h2>
+      <div class="log" id="log"></div>
+    </div>
+
+    <div class="card">
+      <h2>OSI 7계층 대응 <span class="tag" id="osiLive">—</span></h2>
+      <div class="ositab" id="ositab"></div>
+      <div class="hintbox">전송 계층(TCP)은 <b>연결이 살아있는 동안만</b> 재전송합니다. 연결이 끊긴 구간의 대화는 세션 계층과 응용 계층이 책임집니다.</div>
+    </div>
+
+  </aside>
+</div>
+
+<script src="/assets/js/storage.js"></script>
+<script src="/assets/js/sync-core.js"></script>
+<script src="/assets/js/net.js"></script>
+<script src="/assets/js/ui.js"></script>
+</body>
+</html>

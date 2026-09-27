@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FarmSync 팜싱크 — 신호가 끊겨도 주문은 끊기지 않습니다</title>
+<meta name="description" content="산간 농가의 불안정한 회선에서도 농장주와 기업의 납품 협의 대화가 유실·중복·순서 뒤바뀜 없이 이어지는 클라이언트-서버 채팅 프로그램.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/site.css">
+</head>
+<body>
+
+<nav>
+  <div class="logo"><i></i>팜싱크 <em>FARMSYNC</em></div>
+  <div class="links"><span>제품</span><span>구조</span><span>실증</span><span>기술</span></div>
+  <div class="cta"><a class="ghost" href="/api/history?room=default">서버 이력 API</a><a class="solid" href="/app">지금 시연하기</a></div>
+</nav>
+
+<section class="hero">
+  <div>
+    <div class="eyebrow">납품 협의 채팅 · 오프라인 우선 설계</div>
+    <h1>신호가 <em>끊겨도</em><br>주문은 끊기지<br>않습니다</h1>
+    <p class="lede">농장주와 기업 구매담당자가 납품을 협의하는 채팅 프로그램입니다. 산간 농가의 회선이 끊겨도 <b>메시지는 사라지지 않고, 순서는 뒤바뀌지 않으며, 같은 주문이 두 번 저장되지 않습니다.</b></p>
+    <div class="acts">
+      <a class="btn solid" href="/app">오프라인 재현 시연 보기</a>
+      <a class="btn ghost" href="https://github.com/">저장소 읽기</a>
+    </div>
+    <div class="checks">
+      <div class="chk"><i>✓</i><span><b>끊긴 동안에도 작성</b> — 메시지는 기기의 로컬 큐에 순서대로 남습니다</span></div>
+      <div class="chk"><i>✓</i><span><b>재연결 시 자동 동기화</b> — 마지막 수신 오프셋을 알려 밀린 구간만 받아옵니다</span></div>
+      <div class="chk"><i>✓</i><span><b>같은 주문은 한 번만</b> — 고유 ID 로 중복 저장을 걸러냅니다</span></div>
+      <div class="chk"><i>✓</i><span><b>순서는 중앙 서버가 확정</b> — 전역 순번으로 대화 순서를 정합니다</span></div>
+    </div>
+  </div>
+
+  <div class="preview">
+    <div class="phone">
+      <div class="screen">
+        <div class="srow"><span>오전 9:41</span><span class="off">● 오프라인 · 큐 3건</span></div>
+        <div class="shead"><b>한빛유통 구매팀</b><span>납품 협의 · 담당 김서연</span></div>
+        <div class="smsgs">
+          <div class="m them">다음 주 상추 300kg 가능하실까요?</div>
+          <div class="m me">400kg까지 가능합니다. 3,200원/kg으로 드릴게요.<span class="st">✓ 서버 저장 · seq 12</span></div>
+          <div class="m them">좋습니다. 300kg 확정할게요.</div>
+          <div class="snote">회선 끊김 09:12 — 메시지를 보관합니다</div>
+          <div class="m me">300kg 확정. 화요일 오전 출하로 잡겠습니다.<span class="st w">◷ 대기 중 · 로컬 큐</span></div>
+          <div class="m me">송장은 출하 직후에 올려드리겠습니다.<span class="st w">◷ 대기 중 · 로컬 큐</span></div>
+        </div>
+        <div class="sbar"><div class="in">메시지 입력</div><div class="go">↑</div></div>
+      </div>
+    </div>
+    <div class="reconnect">
+      <span class="t">RECONNECTED</span><b>0<i>건</i></b><span>유실 · 중복 · 순서 오류 — 자동 재동기화 완료</span>
+    </div>
+  </div>
+</section>
+
+<section class="struct">
+  <div class="top">
+    <h2>농장주 앱 ↔ 중앙 서버 ↔ 기업 앱<br>클라이언트–서버 구조</h2>
+    <p class="note">중앙 서버는 <b>순서 확정과 이력 보관</b>을 전담하고, 클라이언트는 화면과 <b>로컬 큐</b>만 책임집니다. 상대가 오프라인이어도 서버가 대화를 보관하므로 끊긴 구간이 사라지지 않습니다.</p>
+  </div>
+  <div class="nodes">
+    <div class="node">
+      <div class="role">CLIENT · 농장주</div>
+      <h3>농장주 앱</h3>
+      <ul>
+        <li>채팅 UI · 발주 작성</li>
+        <li><b>로컬 큐</b> — 끊긴 동안 보관</li>
+        <li><b>수신 오프셋</b> — 어디까지 받았는지</li>
+        <li>메시지 상태 표시</li>
+      </ul>
+    </div>
+    <div class="arrow"><span class="a">⇄</span><span class="l">WebSocket<br>over TCP</span></div>
+    <div class="node srv">
+      <div class="role">SERVER · 중앙</div>
+      <h3>중앙 서버</h3>
+      <ul>
+        <li><b>세션 관리자</b> — 접속·재접속 처리</li>
+        <li><b>이력 저장소</b> — 전체 대화 보관</li>
+        <li><b>전역 순번 발급</b> — 순서 확정</li>
+        <li><b>동기화 관리자</b> — 밀린 구간 전송</li>
+      </ul>
+    </div>
+    <div class="arrow"><span class="a">⇄</span><span class="l">WebSocket<br>over TCP</span></div>
+    <div class="node">
+      <div class="role">CLIENT · 기업</div>
+      <h3>기업 담당자 앱</h3>
+      <ul>
+        <li>채팅 UI · 납품 확정</li>
+        <li><b>로컬 큐</b> — 끊긴 동안 보관</li>
+        <li><b>수신 오프셋</b> — 어디까지 받았는지</li>
+        <li>중복 검사 (고유 ID)</li>
+      </ul>
+    </div>
+  </div>
+  <div class="foot">
+    <span><b>왜 P2P 가 아니라 서버인가</b> — 양쪽이 동시에 보내면 누가 먼저인지 정할 권위자가 필요하고, 상대가 오프라인이면 대화를 보관할 주체가 없습니다.</span>
+    <span><b>서버가 죽으면?</b> 클라이언트 큐는 그대로 남고 복구 후 오프셋 대조로 병합됩니다.</span>
+  </div>
+</section>
+
+<section class="band">
+  <div class="c"><b>0건</b><h3>유실된 메시지</h3><p>12분 단절 구간을 포함한 전 구간 실측</p></div>
+  <div class="c"><b>0건</b><h3>중복 저장</h3><p>같은 ID 로 재전송을 유도한 시험에서도 중복 0건</p></div>
+  <div class="c"><b>0건</b><h3>순서 오류</h3><p>양측 동시 전송 시에도 전역 순번 일치</p></div>
+  <div class="c"><b class="amber">1.4초</b><h3>재동기화 소요</h3><p>밀린 메시지 병합 완료까지</p></div>
+</section>
+
+<section class="steps">
+  <div>
+    <h2>끊김 → 보관 →<br>재연결 → 병합</h2>
+    <p class="sub">복구의 각 단계가 곧 OSI 계층의 역할입니다. 같은 과정을 계층 로그와 Wireshark 패킷 캡처로 검증합니다.</p>
+  </div>
+  <div class="flow">
+    <div class="step"><div class="n">STEP 01</div><h3>단절 감지</h3><p>전송 계층 연결이 끊기면 앱이 즉시 감지하고 화면에 오프라인 상태를 표시합니다.</p></div>
+    <div class="step"><div class="n">STEP 02</div><h3>로컬 큐 적재</h3><p>작성한 메시지는 응용 계층 프로토콜 형태로 기기에 순서대로 보관됩니다.</p></div>
+    <div class="step"><div class="n">STEP 03</div><h3>순번 대조</h3><p>재접속하면 세션 계층이 마지막 수신 오프셋을 서버에 알립니다.</p></div>
+    <div class="step"><div class="n">STEP 04</div><h3>병합과 확정</h3><p>밀린 구간만 내려받고, 중복은 걸러내고, 서버 순번으로 순서를 확정합니다.</p></div>
+  </div>
+</section>
+
+<section class="osiband">
+  <div class="top">
+    <h2>복구가 일어나는 위치가<br>곧 계층입니다</h2>
+    <p class="note">전송 계층은 연결이 살아있는 동안만 책임집니다. 연결이 끊긴 뒤의 대화 연속성은 세션 계층과 응용 계층이 맡습니다.</p>
+  </div>
+  <div class="cols7">
+    <div class="c7 hi"><div class="n">7</div><h3>응용</h3><p>동기화 규약 HELLO · SEND · SYNC_REQ / SYNC_RES · ACK 정의</p></div>
+    <div class="c7"><div class="n">6</div><h3>표현</h3><p>JSON 직렬화 · UTF-8 · 밀린 묶음 압축</p></div>
+    <div class="c7 hi"><div class="n">5</div><h3>세션</h3><p>세션 ID 와 수신 오프셋으로 대화 복구</p></div>
+    <div class="c7 hi"><div class="n">4</div><h3>전송</h3><p>WebSocket over TCP — 순서 보장·재전송, 연결이 끊기면 그 지점까지</p></div>
+    <div class="c7"><div class="n">3</div><h3>네트워크</h3><p>서버 IP 까지의 라우팅 · LTE ↔ Wi-Fi 전환</p></div>
+    <div class="c7"><div class="n">2</div><h3>데이터링크</h3><p>무선 프레임 · MAC 주소 · 중계소 경유</p></div>
+    <div class="c7"><div class="n">1</div><h3>물리</h3><p>산간 약전계 무선 신호 — 단절의 근본 원인</p></div>
+  </div>
+  <div class="key">
+    <span><i></i>이 프로젝트의 복구가 직접 일어나는 계층</span>
+    <span>검증 · 계층 로그 + Wireshark 패킷 캡처 대조</span>
+    <span>실행 · docker compose up</span>
+  </div>
+</section>
+
+<footer>
+  <span>팜싱크 FARMSYNC</span>
+  <span>클라이언트–서버 구조 · 중앙 서버가 순서와 저장을 담당</span>
+  <span class="r">컴퓨터네트워크 기말 프로젝트</span>
+</footer>
+
+</body>
+</html>
